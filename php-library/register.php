@@ -1,66 +1,85 @@
 <?php
-var_dump($_POST);
+ini_set('log_errors','On');
 
-function dbc(){
-  $host = "localhost";
-  $dbname = "acrovision_library";
-  $user = "root";
-  $pass = "root";
+ini_set('error_log','php.log');
 
-  $dns = "mysql:host=$host;
-  dbname=$dbname;charset=utf8mb4";
-
-
-  try{
-  $pdo = new PDO($dns, $user, $pass, 
-  [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-  ]);
-
-  return $pdo;
-}catch(PDOException $e){
- exit($e->getMessage());
-}
-}
-
-function fileSave($title,$save_path,$comment){
- $result = False;
-
- $sql = "INSERT INTO books(title,img,comment) value(?,?,?)";
-try{
- $stmt = dbc()->prepare($sql);
- $stmt->bindValue(1, $title);
- $stmt->bindValue(2, $save_path);
- $stmt->bindValue(3, $comment);
- 
- $result = $stmt->execute();
-}catch(\Exception $e){
-  echo 'インサートできませんでした';
-  exit($e->getMessage());
-}
-}
+define('MSG01','入力必須です。');
+define('MSG08','このタイトルは登録済みです');
 
 $title = $_POST['title'];
 $comment = $_POST['comment'];
-
 $file = $_FILES['img'];
 $filename = $file['name'];
 $tmp_path = $file['tmp_name'];
 $file_err = $file['error'];
 $filesize = $file['size'];
 $upload_dir = 'images/';  
-$save_filename = date('YmdHis') . $filename;
+// $save_filename = date('YmdHis') . $filename;
+$save_filename = $filename;
+
 $save_path = $upload_dir.$save_filename;
 
-if(move_uploaded_file($tmp_path, $save_path)){
-  echo $filename . 'ファイルアップ成功しました';
-  $result = fileSave($title, $save_path,$comment);
-}else{
-  echo 'ファイル保存できませんでした';
+
+$err_msg =array();
+
+
+
+if(!empty($_POST)){
+
+
+  
+
+
+    if(empty($err_msg)){
+      $dsn = 'mysql:dbname=acrovision_library;host=localhost;charaset=utf8mb4';
+      $user = 'root';
+      $password = 'root';
+      $options = array(
+        // SQL実行失敗時に例外をスルー
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        // デフォルトフェッチモードを連想配列形式に設定
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        // バッファードクエリを使う（一度に結果セットを全て取得し、サーバー負荷を軽減）
+        // SELECTで得た結果に対してもrowCountメソッドを使えるようにする
+        PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
+      );
+
+      $dbh = new PDO($dsn,$user,$password,$options);
+
+      $query = $dbh->prepare('SELECT * FROM books WHERE title= :title limit 1');
+
+      $query->execute(array(':title' => $title));
+
+      $result = $query->fetch();
+
+
+      if($result > 0){
+
+        $err_msg['title'] = MSG08; 
+        
+      }else{
+        move_uploaded_file($tmp_path, $save_path);
+        $stmt = $dbh->prepare('INSERT INTO books(title,img,comment) VALUES (:title,:img,:comment)');
+
+        $stmt->execute(array(':title' => $title,':img' => $save_path,':comment' => $comment));
+
+        header("Location:register.php");
+        }
+      
+
+    }
+
 }
 
+
+
+
+
+
 ?>
+
+
+
 
 
 <!DOCTYPE HTML>
@@ -344,12 +363,22 @@ if(move_uploaded_file($tmp_path, $save_path)){
 <div class="right">
 <div>
 <!-- class="fontti" -->
-       <label class="fontti">書籍タイトル</label><br>
+
+       <!-- <label class="fontti"> -->
+       <label class="fontti <?php if(!empty($err_msg['title'])) echo 'err'; ?>">書籍タイトル</label><br>
         <input  type="text " class="text form-control" 
-        name="title" required>
+        name="title"
+        value="<?php if(!empty($_POST['title'])) echo $_POST['title']; ?>" required>
+        <div class="area-msg">
+        <?php
+          if(!empty($err_msg['title'])) echo $err_msg['title'];
+          ?>
+        </div>
         <div class="invalid-feedback">
         ※タイトルを入力してください
+        
                 </div>
+
         
     <style>
     
@@ -383,8 +412,12 @@ if(move_uploaded_file($tmp_path, $save_path)){
       resize:none;
       margin:0 auto;
     }
-    
-    
+    .area-msg{
+      color: #dc3545;
+    }
+    .btn-primary{
+      margin-top: 5px;
+    }
           }
           @media screen and (min-width: 600px){
             .invalid-feedback{
@@ -416,6 +449,13 @@ if(move_uploaded_file($tmp_path, $save_path)){
       
       
       }
+      .area-msg{
+      color: #dc3545;
+      font-size: 25px;
+    }
+    
+    
+}
 
 
           }
@@ -430,7 +470,8 @@ if(move_uploaded_file($tmp_path, $save_path)){
         <input class="btn btn btn-primary" type="submit" value="登   録">
         <style>
         @media screen and (min-width: 700px){
-    .btn-primary{font-size:30px;}}
+    .btn-primary{font-size:30px;
+    }}
         </style>
   
         <!-- <button class="btn btn-primary" type="submit">登  録</button>  -->
