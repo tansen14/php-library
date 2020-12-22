@@ -108,7 +108,19 @@
     ?>
 
     <section>
-        <div class="py-5 mb-5" style="width:100%; background-color:#F0F8FF;">
+      <!-- ドロップダウンリスト -->
+      <div class="dropdown">
+        <button type="button" id="dropdown1" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="margin: 10px 10px;">
+          選択してください
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdown1">
+          <!-- 選択肢 -->
+          <a class="dropdown-item" value="全て"> 全て </a>
+          <a class="dropdown-item" value="登録履歴"> 登録履歴 </a>
+          <a class="dropdown-item" value="読破履歴"> 読破履歴 </a>
+        </div>
+      </div>
+        <div class="touroku py-5 mb-5" style="width:100%; background-color:#F0F8FF;">
             <h3 class="text-center">登録履歴</h3>
               <div class="container">
                 <div class="mb-5 row">
@@ -123,20 +135,21 @@
                 </div>
               </div>
           </div>
-          <h3 class="text-center">読破履歴</h3>
-            <div class="container">
-              <div class="mb-5 row">
-                <!-- $sql2で抜き出したDBのデータを使用し、for文で繰り返し表示 -->
-                  <?php for ($i=0; $i<count($d_bid); $i++) : ?>
-                  <div class="col-sm-3" style="background-color:#F0F8FF;">
-                    <img src="<?php echo $d_img[$i] ?>" class="w-100" >
-                    <p><?php echo $d_title[$i] ?></p>
-                    <p><?php echo $d_comment[$i] ?></p>
-                  </div>
-                  <?php endfor; ?>
+          <div class="dokuha py-5 mb-5" style="width:100%;">
+            <h3 class="text-center">読破履歴</h3>
+              <div class="container">
+                <div class="mb-5 row">
+                  <!-- $sql2で抜き出したDBのデータを使用し、for文で繰り返し表示 -->
+                    <?php for ($i=0; $i<count($d_bid); $i++) : ?>
+                    <div class="col-sm-3" style="background-color:#F0F8FF;">
+                      <img src="<?php echo $d_img[$i] ?>" class="w-100" >
+                      <p><?php echo $d_title[$i] ?></p>
+                      <p><?php echo $d_comment[$i] ?></p>
+                    </div>
+                    <?php endfor; ?>
+                </div>
               </div>
-            </div>
-        </div>
+          </div>
     </section>
     </main>
     <!-- Optional JavaScript -->
@@ -144,5 +157,34 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      //myPage.phpを表示した際の表示（登録履歴、読破履歴共に表示しない）
+      window.onload = function() {
+        $('.touroku').css('display', 'none');
+        $('.dokuha').css('display', 'none');
+      }
+
+      $('.dropdown-menu .dropdown-item').click(function(){
+        // ドロップダウンで選択した項目をボタンに表示
+          var visibleItem = $('.dropdown-toggle', $(this).closest('.dropdown'));
+          visibleItem.text($(this).attr('value'));
+
+          var dropdown_val = $(this).attr('value');
+          // ドロップダウンで選択した項目に応じて、画面表示を変更する
+          // 「全て」を選択した場合、登録履歴、読破履歴共に表示
+          if (dropdown_val == "全て") {
+            $('.touroku').css('display', 'block');
+            $('.dokuha').css('display', 'block');
+          // 「登録履歴」を選択した場合、登録履歴は表示、読破履歴は表示しない
+          }else if(dropdown_val == "登録履歴") {
+            $('.touroku').css('display', 'block');
+            $('.dokuha').css('display', 'none');
+          // 「読破履歴」を選択した場合、登録履歴は表示しない、読破履歴は表示
+          }else if(dropdown_val == "読破履歴") {
+            $('.touroku').css('display', 'none');
+            $('.dokuha').css('display', 'block');
+          }
+      });
+    </script>
   </body>
 </html>
