@@ -1,14 +1,21 @@
 <?php
-ini_set('log_errors','On');
+// ini_set('log_errors','On');
 
-ini_set('error_log','php.log');
+// ini_set('error_log','php.log');
 
-define('MSG01','入力必須です。');
-define('MSG08','このタイトルは登録済みです');
+
+
+
+
+define('MSG01','※このタイトルは登録済みです');
+// define('MSG02','登録完了しました');
 
 $title = $_POST['title'];
+// $title = htmlspecialchars($title,ENT_QUOTES);
 $comment = $_POST['comment'];
+// $comment = htmlspecialchars($comment,ENT_QUOTES);
 $file = $_FILES['img'];
+// $file = htmlspecialchars($file,ENT_QUOTES);
 $filename = $file['name'];
 $tmp_path = $file['tmp_name'];
 $file_err = $file['error'];
@@ -55,15 +62,21 @@ if(!empty($_POST)){
 
       if($result > 0){
 
-        $err_msg['title'] = MSG08; 
+        $err_msg['title'] = MSG01; 
         
+
       }else{
+
+        
         move_uploaded_file($tmp_path, $save_path);
+        $MSG02 = '登録完了しました';
+        
         $stmt = $dbh->prepare('INSERT INTO books(title,img,comment) VALUES (:title,:img,:comment)');
 
         $stmt->execute(array(':title' => $title,':img' => $save_path,':comment' => $comment));
-
-        header("Location:register.php");
+        
+        header("Location:mypage.php");
+        exit();
         }
       
 
@@ -96,37 +109,40 @@ if(!empty($_POST)){
 
 </head> 
 <style>
-@media screen and (min-width: 600px){ 
+@media screen and (min-width: 700px){ 
   
   .grid-container {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1.5fr;
     grid-template-rows: 1fr;
     gap: 0px 0px;
     grid-template-areas:
       "left right";
-    margin-top:160px;
-    /* align-items: center;
-    place-items: center; */
-    
+    margin-top:160px; 
   }
   
   .left { grid-area: left;
-    margin-left:80px;
-    margin-right: 50px;
-    
+    /* margin-left:80px;
+    margin-right: 50px; */
+    text-align: center;
+    display:block;
+    margin:0 auto;
    }
   
   .right { 
     /* width:100%; */
     grid-area: right; 
+    margin: 0 auto;
     /* margin-right:30px; */
     /* text-align: center; */
     /* margin:0 auto; */
    /* align-self: center; */
-   position: relative;
+   /* position: relative;
    left:50%;
-   transform: translate(-50%);
+   transform: translate(-50%); */
+   /* text-align: center;
+    display:block;
+    margin:0 auto; */
   }
   .image{
           
@@ -148,28 +164,28 @@ if(!empty($_POST)){
         width:380px;
       }
       .text{
-        height:60px;
+        /* height:60px;
         width:650px;
         font-size:30px;
         border-radius: 10px;
         border: 5px solid #7AAEC4;
-        resize:none;
-        margin-right: 50px;
+        resize:none; */
+        
         
       }
       
       
       .textarea{
-        font-size:25px;
+        /* font-size:25px;
         width:650px; 
          height:200px;
-         margin-right: 50px;
+         
         
 
         border-radius: 10px;
         border: 5px solid #7AAEC4;
         resize:none;
-      
+       */
       
       }
       .fontti{
@@ -197,7 +213,7 @@ if(!empty($_POST)){
         
       }
       .btn{
-        margin-left:400px;
+        margin-left:410px;
         margin-top:10px;
         
         width:230px;
@@ -214,11 +230,20 @@ if(!empty($_POST)){
         top:2px;
         box-shadow: none;
       }
-
-
+      .app.form-control{
+        border:3px solid gray ;
+        background-color: white;
+        padding: 1px;
+        /* margin-left:50px; */
+        /* margin-bottom:100px; */
+        margin-top:30px;
+        width:380px;
+        height:38px;
+      }
+      .btn-primary{font-size:30px;}
       
 }
-@media screen and (max-width: 600px){
+@media screen and (max-width: 700px){
 .cont{
    
   text-align: center; 
@@ -229,7 +254,8 @@ if(!empty($_POST)){
   width: 200px;
   height: 230px; 
   margin-top:100px;
-  border: 2px solid#7AAEC4;
+  border: 3px solid#7AAEC4;
+  
     }
     /* #scale{
       transform: scale(0.6);
@@ -272,124 +298,34 @@ if(!empty($_POST)){
     .fontcm{
 
     }
-    /* .btn{
+    .btn{
       
-      margin-top:20px;
+      /* margin-top:20px; */
       width:90px;
-      font-size:100px;
+      /* font-size:100px; */
       background-color:#138EE1;
       color:white;
       border-radius: 5px;
       border: none;
-      box-shadow: 0px 4px #043152;
-    } */
+      box-shadow: 0px 3px #043152;
+    }
     .btn:active{
       position:relative;
       top:2px;
       box-shadow: none;
     }
-  }
-
-</style>
-<body>
-<script type="text/javascript" src="js/jquery-3.5.1.slim.min.js"></script>
-   <script type="text/javascript" src="js/bootstrap.js"></script> 
-  <style>
-    body{background-color:#DCF0FE;
-      }
-
-  </style>
-  
-  <div class="cont">
-  <form class="needs-validation" action="register.php" method="post"novalidate
-  enctype="multipart/form-data">
-  
-<div class="grid-container">
-
-<div class="left">
-<!-- <div> -->
-<img class="image" id="preview" name=image>   
-        <div>
-        <!-- id="myImage" -->
-        <input type="hidden" name="MAX_FILE_SIZE" />
-        <input class="app form-control" name="img" type="file" 
-         accept="image/*" onchange="setImage(this);" onclick="this.value = '';"
-        required>
-        <div class="invalid-feedback" >
-                    ※画像を選択してください
-                </div>
-                <style>@media screen and (max-width: 600px){
-         .app.form-control{
-            border:1px solid gray ;
+    .app.form-control{
+            border:2px solid gray;
+            border-radius:5px;
             background-color: white;
             margin-bottom:20px;
             
             width:200px;
             font-size:10px;
             margin:0 auto;
-            height:23px;
+            height:25px;
             padding:0;
             }
-          }
-          @media screen and (min-width: 600px){
-            .app.form-control{
-        border:3px solid gray ;
-        background-color: white;
-        padding: 1px;
-        /* margin-left:50px; */
-        /* margin-bottom:100px; */
-        margin-top:30px;
-        width:380px;
-        height:38px;
-      }
-          }
-                </style>
-    
-
-    <script>
-    function setImage(target) {
-        var reader = new FileReader();
-        reader.onload = function (e) {
-            document.getElementById("preview").setAttribute('src', e.target.result);
-        }
-        reader.readAsDataURL(target.files[0]);
-    };
-    </script>
-    </div>
-    
-    </div>
-    
-<!-- </div> -->
-<div class="right">
-<div>
-<!-- class="fontti" -->
-
-       <!-- <label class="fontti"> -->
-       <label class="fontti <?php if(!empty($err_msg['title'])) echo 'err'; ?>">書籍タイトル</label><br>
-        <input  type="text " class="text form-control" 
-        name="title"
-        value="<?php if(!empty($_POST['title'])) echo $_POST['title']; ?>" required>
-        <div class="area-msg">
-        <?php
-          if(!empty($err_msg['title'])) echo $err_msg['title'];
-          ?>
-        </div>
-        <div class="invalid-feedback">
-        ※タイトルを入力してください
-        
-                </div>
-
-        
-    <style>
-    
-
-   </style>
-                
-      <div>
-      <label class="fontcm" >コメント</label><br>
-        <textarea class="textarea form-control"  name="comment" required></textarea>
-        <style>
-          @media screen and (max-width: 600px){
             .invalid-feedback{
               font-size:15px;
             }
@@ -418,8 +354,98 @@ if(!empty($_POST)){
     .btn-primary{
       margin-top: 5px;
     }
+  }
+
+</style>
+<body>
+<script type="text/javascript" src="js/jquery-3.5.1.slim.min.js"></script>
+   <script type="text/javascript" src="js/bootstrap.js"></script> 
+  <style>
+    body{background-color:#DCF0FE;
+      }
+
+  </style>
+  
+  <div class="cont">
+  <form class="needs-validation" action="register.php" method="post"novalidate
+  enctype="multipart/form-data">
+  
+<div class="grid-container">
+
+<div class="left">
+<!-- <div> -->
+<img class="image" id="preview" name=image>   
+        <div>
+        <!-- id="myImage" -->
+        <input type="hidden" name="MAX_FILE_SIZE" />
+        <input class="app form-control" name="img" type="file" 
+         accept="image/*" onchange="setImage(this);" onclick="this.value= '';"
+        required>
+        
+        
+        <div class="invalid-feedback" >
+                    ※画像を選択してください
+                </div>
+                <style>@media screen and (max-width: 700px){
+         
           }
-          @media screen and (min-width: 600px){
+          @media screen and (min-width: 700px){
+            
+          }
+                </style>
+    
+
+    <script>
+    function setImage(target) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            document.getElementById("preview").setAttribute('src', e.target.result);
+        }
+        reader.readAsDataURL(target.files[0]);
+    };
+    </script>
+    </div>
+    
+    </div>
+    
+<!-- </div> -->
+<div class="right">
+<!-- <div c> -->
+<!-- class="fontti" -->
+
+       <!-- <label class="fontti"> -->
+       <label class="fontti <?php if(!empty($err_msg['title'])) echo 'err'; ?>">書籍タイトル</label><br>
+        <input  type="text " class="text form-control" 
+        name="title"
+        value="<?php if(!empty($_POST['title'])) echo $_POST['title'];
+        ?>" required>
+        <div class="area-msg">
+        <?php
+          if(!empty($err_msg['title'])) {
+            echo $err_msg['title']; 
+          }
+          ?>
+        </div>
+        <div class="invalid-feedback">
+        ※タイトルを入力してください
+        
+                </div>
+
+        
+    <style>
+    
+
+   </style>
+                
+      <div>
+      <label class="fontcm" >コメント</label><br>
+        <textarea class="textarea form-control"  name="comment"
+         required></textarea>
+        <style>
+          @media screen and (max-width: 700px){
+            
+          }
+          @media screen and (min-width: 700px){
             .invalid-feedback{
               font-size:25px;
              
@@ -431,7 +457,7 @@ if(!empty($_POST)){
         border-radius: 10px;
         border: 5px solid #7AAEC4;
         resize:none;
-        margin-right: 50px;
+        
         
       }
       
@@ -440,13 +466,13 @@ if(!empty($_POST)){
         font-size:25px;
         width:650px; 
          height:200px;
-         margin-right: 50px;
+        
         
 
         border-radius: 10px;
         border: 5px solid #7AAEC4;
         resize:none;
-      
+        
       
       }
       .area-msg{
@@ -470,14 +496,14 @@ if(!empty($_POST)){
         <input class="btn btn btn-primary" type="submit" value="登   録">
         <style>
         @media screen and (min-width: 700px){
-    .btn-primary{font-size:30px;
-    }}
+    
+    }
         </style>
   
         <!-- <button class="btn btn-primary" type="submit">登  録</button>  -->
       </div>
 </div>
-</div>
+<!-- </div> -->
 </div>
 </form>
 </div>
@@ -503,6 +529,13 @@ if(!empty($_POST)){
             });
         }, false);
     })();
+
+    
+
+
 </script>
+<!-- <script>
+
+</script> -->
 </body>
 </html>
